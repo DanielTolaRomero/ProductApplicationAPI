@@ -1,0 +1,43 @@
+@WebApplicationPractica_HostAddress = http://localhost:5278
+
+### peticion para verificar el estado del servicio
+
+GET {{WebApplicationPractica_HostAddress}}/api/Product/status
+Accept: application/json
+
+### peticion para obtener un producto por su id
+GET {{WebApplicationPractica_HostAddress}}/api/Product/3
+Accept: application/json
+
+### peticion para obtener todos los productos
+GET {{WebApplicationPractica_HostAddress}}/api/Product
+accept: application/json
+
+### peticion para crear un nuevo producto
+POST {{WebApplicationPractica_HostAddress}}/api/Product 
+Content-Type: application/json
+
+{
+  "name": "o",
+  "category": "o",
+  "price": 100.00
+}
+
+### peticion para actualizar un producto existente
+
+PUT {{WebApplicationPractica_HostAddress}}/api/Product/2
+Content-Type: application/json
+
+{
+  "id" : 2,
+  "name": "1 == 1",
+  "category": "miselaneos",
+  "price": 12
+}
+
+### peticion para eliminacion logica de un producto por su id
+
+DELETE {{WebApplicationPractica_HostAddress}}/api/Product/1
+Content-Type: application/json
+
+    

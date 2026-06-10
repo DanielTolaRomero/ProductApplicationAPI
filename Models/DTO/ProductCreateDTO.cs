@@ -1,0 +1,17 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace WebApplicationPractica.Models.DTO
+{
+    public class ProductCreateDTO
+    {
+        [Required(ErrorMessage = "El nombre del producto es obligatorio")]
+        [MinLength(3, ErrorMessage = "El nombre del producto debe tener al menos 3 caracteres")]
+        public string name { get; set; }
+        [Required(ErrorMessage = "La categoria es obligatorio")]
+        [MinLength(3, ErrorMessage = "La categoria debe tener al menos 3 caracteres")]
+        public string category { get; set; }
+        [Required(ErrorMessage = "El precio es obligatorio")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "El valor debe ser un número positivo mayor a 0.")]
+        public decimal price { get; set; }
+    }
+}
