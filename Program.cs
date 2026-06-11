@@ -1,6 +1,7 @@
 using WebApplicationPractica.Data;
 using Microsoft.EntityFrameworkCore;
 using WebApplicationPractica.Services;
+using WebApplicationPractica.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Regstro del servicio de ProductService para inyeccion de dependencias
 
 builder.Services.AddScoped<IProductService, ProductService>();
+
+// Registro del manejador de excepciones personalizado para productos
+
+builder.Services.AddExceptionHandler<ProductExceptionHandler>();
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -27,6 +32,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
     app.MapOpenApi();
 }
 

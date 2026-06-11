@@ -66,12 +66,9 @@ namespace WebApplicationPractica.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProduct(int id, ProductUpdateDto product)
         {
-            var actualizado = await _productService.UpdateAsync(id, product);
-            if(!actualizado)
-            {
-                return BadRequest(new { mensaje = "Error al actualizar. Verifique los IDs"});
-            }
+            await _productService.UpdateAsync(id, product);
 
+            // return BadRequest(new { mensaje = "Error al actualizar. Verifique los IDs"});
             return Ok(new { mensaje = "El producto a sido actualizado"});
         }
 
@@ -80,11 +77,7 @@ namespace WebApplicationPractica.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
-            var eliminado = await _productService.DeleteAsync(id);
-            if (!eliminado)
-            {
-                return NotFound(new { mensaje = $"Producto con ID {id} no encontrado." });
-            }
+            await _productService.DeleteAsync(id);
 
             return Ok(new { mensaje = $"Producto con ID {id}  se elimino con exito." });
         }

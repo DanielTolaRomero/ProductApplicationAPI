@@ -6,7 +6,7 @@ GET {{WebApplicationPractica_HostAddress}}/api/Product/status
 Accept: application/json
 
 ### peticion para obtener un producto por su id
-GET {{WebApplicationPractica_HostAddress}}/api/Product/3
+GET {{WebApplicationPractica_HostAddress}}/api/Product/1
 Accept: application/json
 
 ### peticion para obtener todos los productos
@@ -18,26 +18,26 @@ POST {{WebApplicationPractica_HostAddress}}/api/Product
 Content-Type: application/json
 
 {
-  "name": "o",
-  "category": "o",
-  "price": 100.00
+  "name": "Laptop HP",
+  "category": "Electronics",
+  "price": 999.99
 }
 
 ### peticion para actualizar un producto existente
 
-PUT {{WebApplicationPractica_HostAddress}}/api/Product/2
+PUT {{WebApplicationPractica_HostAddress}}/api/Product/4
 Content-Type: application/json
 
 {
-  "id" : 2,
-  "name": "1 == 1",
-  "category": "miselaneos",
+  "id" : 4,
+  "name": "Laptop Asus",
+  "category": "Electronics",
   "price": 12
 }
 
 ### peticion para eliminacion logica de un producto por su id
 
-DELETE {{WebApplicationPractica_HostAddress}}/api/Product/1
+DELETE {{WebApplicationPractica_HostAddress}}/api/Product/3
 Content-Type: application/json
 
     

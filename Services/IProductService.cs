@@ -9,8 +9,8 @@ namespace WebApplicationPractica.Services
         Task<IEnumerable<Product>> GetAllProductsAsync();
         Task<Product?> GetProductByIdAsync(int id);
         Task<Product> CreateAsync(ProductCreateDTO product);
-        Task<bool> UpdateAsync(int id, ProductUpdateDto product);
-        Task<bool> DeleteAsync(int id);
+        Task UpdateAsync(int id, ProductUpdateDto product);
+        Task DeleteAsync(int id);
     }
 
 }
