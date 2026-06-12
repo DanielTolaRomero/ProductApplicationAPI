@@ -13,21 +13,23 @@ namespace WebApplicationPractica.Services
             _context = context;
         }
 
-        // medodo de para crear productos
+        /*
+         * medodo de para crear productos, se recibe un objeto ProductCreateDTO, 
+         * se crea un nuevo objeto Product con los datos del DTO, se agrega a la base de datos y se guarda los cambios,
+         * finalmente se devuelve el producto creado 
+         */
         public async Task<Product> CreateAsync(ProductCreateDTO productDto)
         {
             var product = new Product
             {
                 name = productDto.name,
-                category = productDto.category,
+                categoryId = productDto.categoryId,
                 price = productDto.price
             };
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
             return product;
         }
-
-        
 
         // metodo para obtener todos los productos activos
         public async Task<IEnumerable<Product>> GetAllProductsAsync()
@@ -53,7 +55,7 @@ namespace WebApplicationPractica.Services
             }
             var product = await GetProductByIdAsync(id);
             product.name = productDto.name;
-            product.category = productDto.category;
+            product.categoryId = productDto.categoryId;
             product.price = productDto.price;
 
             await _context.SaveChangesAsync();
@@ -73,6 +75,73 @@ namespace WebApplicationPractica.Services
         public bool ProductExists(int id)
         {
             return _context.Products.Any(e => e.id == id);
+        }
+
+        public Task<IEnumerable<Product>> GetProductsPage(int page, int pageSize)
+        {
+            return _context.Products.Where(p => p.active)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync()
+                .ContinueWith(t => t.Result.AsEnumerable());
+        }
+        /* 
+         * Metodo que devuelve el listado de productos activos por categoria, 
+         * se utiliza el metodo Where para filtrar los productos por categoria y estado activo,
+         * luego se convierte a una lista asincrona y se devuelve como un enumerable
+        */
+        public Task<IEnumerable<Product>> GetProductsByCategoryAsync(int category, int page, int pageSize)
+        {
+            return _context.Products.Where(p => p.categoryId == category && p.active)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync()
+                .ContinueWith(t => t.Result.AsEnumerable());
+        }
+        /*
+         *  Metodo que devuelve el listado de productos activos por rango de precio,
+         *  se utiliza el metodo Where para filtrar los productos por rango de precio y estado activo,
+         *  luego se convierte a una lista asincrona y se devuelve como un enumerable
+         *  el metodo recibe como parametros el precio minimo, el precio maximo, la pagina
+         */
+
+        public Task<IEnumerable<Product>> GetProductsByRangePriceAsync(decimal minPrice, decimal maxPrice, int page, int pageSize)
+        {
+            return _context.Products.Where(p => p.price >= minPrice && p.price <= maxPrice && p.active)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync()
+                .ContinueWith(t => t.Result.AsEnumerable());
+        }
+
+        /*
+         * Metodo que devuelve el listado de productos activos ordenados por precio,
+         * de acuerdo al termino de ordenamiento recibido como parametro, 
+         * se utiliza el metodo OrderBy o OrderByDescending para ordenar los productos por precio,
+         */
+
+        public Task<IEnumerable<Product>> SortProductsAsync(string sortTerm, int page, int pageSize)
+        {
+            return sortTerm.ToLower() switch
+            {
+                "asc" => _context.Products.Where(p => p.active).OrderBy(p => p.price)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync()
+                    .ContinueWith(t => t.Result.AsEnumerable()),
+                "desc" => _context.Products.Where(p => p.active).OrderByDescending(p => p.price)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync()
+                    .ContinueWith(t => t.Result.AsEnumerable()),
+                _ => throw new ArgumentException("Invalid sort term")
+            };
+        }
+
+        public Task<Product?> GetProductByNameAsync(string name)
+        {
+            return _context.Products.FirstOrDefaultAsync(p => p.name == name && p.active);
+        
         }
     }
 }

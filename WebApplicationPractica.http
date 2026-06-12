@@ -5,12 +5,29 @@
 GET {{WebApplicationPractica_HostAddress}}/api/Product/status
 Accept: application/json
 
-### peticion para obtener un producto por su id
-GET {{WebApplicationPractica_HostAddress}}/api/Product/1
-Accept: application/json
-
 ### peticion para obtener todos los productos
 GET {{WebApplicationPractica_HostAddress}}/api/Product
+Accept: application/json
+
+### peticion para obtener producto por id
+GET {{WebApplicationPractica_HostAddress}}/api/Product/5
+Accept: application/json
+
+### peticion para obtener producto por nombre
+GET {{WebApplicationPractica_HostAddress}}/api/Product/name/Laptop%20HP
+Accept: application/json
+
+### peticion para obtener un producto por su categoria
+GET {{WebApplicationPractica_HostAddress}}/api/Product/category/Electronics?page=1&pageSize=5
+Accept: application/json
+
+### peticion para obtener un productos por su precio
+GET {{WebApplicationPractica_HostAddress}}/api/Product/price?minPrice=10&maxPrice=100&page=1&pageSize=10
+Accept: application/json
+
+### peticion para obtener un productos 
+### peticion para obtener todos los productos
+GET {{WebApplicationPractica_HostAddress}}/api/Product/sort?sort=asc&page=1&pageSize=10
 accept: application/json
 
 ### peticion para crear un nuevo producto

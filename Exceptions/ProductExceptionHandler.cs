@@ -39,6 +39,30 @@ namespace WebApplicationPractica.Exceptions
                     };
                     await httpContext.Response.WriteAsJsonAsync(badResponse, cancellationToken);
                     return true;
+                case CategoryNotFoundException:
+                    _logger.LogWarning(exception, "Categoría no encontrada: {Message}", exception.Message);
+                    httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                    httpContext.Response.ContentType = "application/json";
+                    var categoryResponse = new
+                    {
+                        error = "Categoría no encontrada",
+                        message = exception.Message,
+                        timestamp = DateTime.UtcNow
+                    };
+                    await httpContext.Response.WriteAsJsonAsync(categoryResponse, cancellationToken);
+                    return true;
+                case CategoryInvalidValueException:
+                    _logger.LogWarning(exception, "Categoría inválida: {Message}", exception.Message);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    httpContext.Response.ContentType = "application/json";
+                    var categoryBadResponse = new
+                    {
+                        error = "Categoría inválida",
+                        message = exception.Message,
+                        timestamp = DateTime.UtcNow
+                    };
+                    await httpContext.Response.WriteAsJsonAsync(categoryBadResponse, cancellationToken);
+                    return true;
             }
 
             return false;
