@@ -1,7 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using WebApplicationPractica.Data;
-using WebApplicationPractica.Models;
 using WebApplicationPractica.Models.DTO;
 using WebApplicationPractica.Services;
 
@@ -36,44 +33,39 @@ namespace WebApplicationPractica.Controllers
         // GET: api/Product
         // Metodo para obtener todos los productos activos
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> getProduct()
+        public async Task<ActionResult<IEnumerable<ProductOutputDTO>>> getAllProducts()
         {
-            var products = await _productService.GetAllProductsAsync();
-            return Ok(products);
+            return Ok(await _productService.GetAllProductsAsync());
         }
 
         // GET: api/Product/5
         // Metodo para obtener un producto por su ID
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<ProductOutputDTO>> GetProductById(int id)
         {
-            var product = await _productService.GetProductByIdAsync(id);
-            if (product == null) { return NotFound(new { mensaje = $"El producto con id {id} no existe" }); }
-
+            var product = await _productService.GetProductDtoByIdAsync(id);
             return Ok(product);
         }
 
         [HttpGet("name/{name}")]
-        public async Task<ActionResult<Product>> GetProductByName(string name)
+        public async Task<ActionResult<ProductOutputDTO>> GetProductByName(string name)
         {
             var product = await _productService.GetProductByNameAsync(name);
-            if (product == null) { return NotFound(new { mensaje = $"El producto con nombre {name} no existe" }); }
-
             return Ok(product);
         }
 
         // GET: api/Product/category/{category}
         // Metodo para obtener productos por categoría
-        [HttpGet("category/{category}")]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProductsByCategory(string category,
+        [HttpGet("category/{categoryId}")]
+        public async Task<ActionResult<IEnumerable<ProductOutputDTO>>> GetProductsByCategory(int categoryId,
             [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var products = await _productService.GetProductsByCategoryAsync(category, page, pageSize);
+            var products = await _productService.GetProductsByCategoryAsync(categoryId, page, pageSize);
             return Ok(products);
         }
 
         [HttpGet("page")]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProductsPage([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<ActionResult<IEnumerable<ProductOutputDTO>>> GetProductsPage([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var products = await _productService.GetProductsPage(page, pageSize);
             return Ok(products);
@@ -82,7 +74,7 @@ namespace WebApplicationPractica.Controllers
         // GET: api/Product/price?minPrice=10&maxPrice=100&page=1&pageSize=10
         // End point para obtener productos dentro de un rango de precios
         [HttpGet("price")]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProductsByRangePrice([FromQuery] decimal minPrice, [FromQuery] decimal maxPrice,
+        public async Task<ActionResult<IEnumerable<ProductOutputDTO>>> GetProductsByRangePrice([FromQuery] decimal minPrice, [FromQuery] decimal maxPrice,
             [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var products = await _productService.GetProductsByRangePriceAsync(minPrice, maxPrice, page, pageSize);
@@ -92,7 +84,7 @@ namespace WebApplicationPractica.Controllers
         // GET: api/Product/sort?sort=asc&page=1&pageSize=10
         // End point para obtener productos ordenados por precio
         [HttpGet("sort")]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProductsSortedByPrice([FromQuery] string sort = "asc",
+        public async Task<ActionResult<IEnumerable<ProductOutputDTO>>> GetProductsSortedByPrice([FromQuery] string sort = "asc",
             [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var products = await _productService.SortProductsAsync(sort, page, pageSize);
@@ -103,10 +95,10 @@ namespace WebApplicationPractica.Controllers
         // POST: api/Product
         // Metodo para crear un nuevo producto
         [HttpPost]
-        public async Task<ActionResult<Product>> PostProduct(ProductCreateDTO product)
+        public async Task<ActionResult<ProductOutputDTO>> PostProduct(ProductCreateDTO product)
         {
             var newProduct = await _productService.CreateAsync(product);
-            return CreatedAtAction(nameof(GetProduct), new { id = newProduct.id }, newProduct);
+            return CreatedAtAction(nameof(GetProductById), new { id = newProduct.id }, newProduct);
         }
 
         // -------------------------------------------------PUT-------------------------------------------------

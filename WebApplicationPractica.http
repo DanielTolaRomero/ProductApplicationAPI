@@ -10,7 +10,7 @@ GET {{WebApplicationPractica_HostAddress}}/api/Product
 Accept: application/json
 
 ### peticion para obtener producto por id
-GET {{WebApplicationPractica_HostAddress}}/api/Product/5
+GET {{WebApplicationPractica_HostAddress}}/api/Product/1
 Accept: application/json
 
 ### peticion para obtener producto por nombre
@@ -18,7 +18,7 @@ GET {{WebApplicationPractica_HostAddress}}/api/Product/name/Laptop%20HP
 Accept: application/json
 
 ### peticion para obtener un producto por su categoria
-GET {{WebApplicationPractica_HostAddress}}/api/Product/category/Electronics?page=1&pageSize=5
+GET {{WebApplicationPractica_HostAddress}}/api/Product/category/1?page=1&pageSize=5
 Accept: application/json
 
 ### peticion para obtener un productos por su precio
@@ -36,7 +36,7 @@ Content-Type: application/json
 
 {
   "name": "Laptop HP",
-  "category": "Electronics",
+  "categoryId": 1,
   "price": 999.99
 }
 
@@ -48,7 +48,7 @@ Content-Type: application/json
 {
   "id" : 4,
   "name": "Laptop Asus",
-  "category": "Electronics",
+  "categoryId": "Electronics",
   "price": 12
 }
 
@@ -57,4 +57,32 @@ Content-Type: application/json
 DELETE {{WebApplicationPractica_HostAddress}}/api/Product/3
 Content-Type: application/json
 
-    
+### ------------------------------------Category----------------------------------------
+
+GET {{WebApplicationPractica_HostAddress}}/api/Category
+Content-Type: application/json
+
+###
+GET {{WebApplicationPractica_HostAddress}}/api/Category/get/1
+Content-Type: application/json
+
+### peticion para crear una nueva categoria
+POST {{WebApplicationPractica_HostAddress}}/api/Category/create
+Content-Type: application/json
+{
+  "category": "Electronics"
+}
+
+### peticion para actualizar una categoria existente
+
+PUT {{WebApplicationPractica_HostAddress}}/api/Category/update/1
+Content-Type: application/json
+{
+  "id" : 1,
+  "category": "Home Appliances"
+}
+
+### peticion para eliminacion logica de una categoria por su id
+DELETE {{WebApplicationPractica_HostAddress}}/api/Category/delete/2 
+content-Type: application/json
+

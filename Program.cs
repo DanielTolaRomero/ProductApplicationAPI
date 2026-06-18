@@ -17,6 +17,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Regstro del servicio de ProductService para inyeccion de dependencias
 
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();    
 
 // Registro del manejador de excepciones personalizado para productos
 

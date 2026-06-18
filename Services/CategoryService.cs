@@ -2,6 +2,7 @@
 using WebApplicationPractica.Data;
 using WebApplicationPractica.Exceptions;
 using WebApplicationPractica.Models;
+using WebApplicationPractica.Models.DTO;
 
 namespace WebApplicationPractica.Services
 {
@@ -13,41 +14,42 @@ namespace WebApplicationPractica.Services
         {
             _context = context;
         }
-
-        public async Task<Category> CreateAsync(Category category)
+        public async Task<IEnumerable<CategoryOutputDTO>> GetAllCategoriesAsync()
         {
-            _context.Categories.Add(category);
+            var categories = await _context.Categories.Where(c => c.active).ToListAsync();
+            return categories.Select(c => new CategoryOutputDTO { id = c.id, category = c.category });
+        }
+
+        // 
+        public async Task<CategoryOutputDTO?> GetCategoryByIdAsync(int id)
+        {
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.id == id && c.active)
+                ?? throw new CategoryNotFoundException("Categoria no encontrada");
+            return new CategoryOutputDTO { id = category.id, category = category.category };
+        }
+        public async Task<CategoryOutputDTO> CreateAsync(Category category)
+        {
+            var createdCategory = _context.Categories.Add(category);
             await _context.SaveChangesAsync();
-            return category;
+            return new CategoryOutputDTO { id = createdCategory.Entity.id, category = createdCategory.Entity.category };
         }
 
         public async Task DeleteAsync(int id)
         {
-            var category = await GetCategoryByIdAsync(id);
-            _context.Categories.Remove(category);
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.id == id && c.active)
+                ?? throw new CategoryNotFoundException("Categoria no encontrada");
+            category.active = false; // Marcar como inactiva en lugar de eliminar físicamente
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
-        {
-            return await _context.Categories.ToListAsync();
-        }
 
-        public async Task<Category?> GetCategoryByIdAsync(int id)
-        {
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.id == id)
-                ?? throw new CategoryNotFoundException("Categoria no encontrada");
-            return category;
-        }
 
         public async Task UpdateAsync(int id, Category category)
         {
-            await GetCategoryByIdAsync(id); // Verificar que la categoría existe
-            if (id != category.id)
-            {
-                throw new CategoryInvalidValueException("El id de la categoría no coincide con el id de la categoría a actualizar");
-            }
-            _context.Categories.Update(category);
+            var existingCategory = await _context.Categories.FirstOrDefaultAsync(c => c.id == id && c.active)
+                ?? throw new CategoryNotFoundException("Categoria no encontrada");
+            existingCategory.category = category.category; // Actualizar los campos necesarios
+
             await _context.SaveChangesAsync();
         }
     }
