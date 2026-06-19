@@ -103,7 +103,7 @@ namespace WebApplicationPractica.Services
         // metodo para eliminar productos, eliminacion logica, se cambia el estado del producto a inactivo
         public async Task DeleteAsync(int id)
         {
-            var product = await GetProductByIdAsyncO(id);
+            var product = await GetProductEntityByIdAsync(id);
 
             product.active = false;
 
