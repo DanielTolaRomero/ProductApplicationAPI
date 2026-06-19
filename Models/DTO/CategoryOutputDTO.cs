@@ -2,7 +2,7 @@
 {
     public class CategoryOutputDTO
     {
-        public int id { get; set; }
-        public string category { get; set; }
+        public int Id { get; set; }
+        public string Category { get; set; }
     }
 }

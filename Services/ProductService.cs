@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using WebApplicationPractica.Data;
 using WebApplicationPractica.Exceptions;
 using WebApplicationPractica.Models;
@@ -8,11 +9,36 @@ namespace WebApplicationPractica.Services
 {
     public class ProductService : IProductService
     {
+        private static readonly Expression<Func<Product, ProductOutputDTO>> ProductProjection = p => new ProductOutputDTO
+        {
+            Id = p.Id,
+            Name = p.Name,
+            Category = p.Category.CategoryName,
+            Price = p.Price,
+            FechaCreacion = p.FechaCreacion
+        };
+
         private readonly ApplicationDbContext _context;
         public ProductService(ApplicationDbContext context) {
             _context = context;
         }
 
+        private void ValidatePageParameters(ref int page, ref int pageSize)
+        {
+            if (page <= 0)
+            {
+                page = 1;
+            }
+            if (pageSize <= 0)
+            {
+                pageSize = 10;
+            }
+            if (pageSize > 100)
+            {
+                pageSize = 100;
+            }
+        }
+        // --------------------------------------------------Create--------------------------------------------------
         /*
          * medodo de para crear productos, se recibe un objeto ProductCreateDTO, 
          * se crea un nuevo objeto Product con los datos del DTO, se agrega a la base de datos y se guarda los cambios,
@@ -20,71 +46,50 @@ namespace WebApplicationPractica.Services
          */
         public async Task<ProductOutputDTO> CreateAsync(ProductCreateDTO productDto)
         {
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.id == productDto.categoryId) ?? 
-                throw new CategoryNotFoundException("La categoria no existe");
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == productDto.CategoryId) ?? 
+                throw new NotFoundException($"La categoria con {productDto.CategoryId} no existe");
                 
             var product = new Product
             {
-                name = productDto.name,
-                categoryId = productDto.categoryId,
-                price = productDto.price
+                Name = productDto.Name,
+                CategoryId = productDto.CategoryId,
+                Price = productDto.Price
             };
             var productSave = _context.Products.Add(product);
-
             await _context.SaveChangesAsync();
-            return new ProductOutputDTO
-            {
-                id = productSave.Entity.id,
-                name = productSave.Entity.name,
-                category = productSave.Entity.category.category,
-                price = productSave.Entity.price,
-                FechaCreacion = productSave.Entity.FechaCreacion
-            };
+            var productResult = await GetProductDtoByIdAsync(productSave.Entity.Id);
+            return productResult;
         }
-
+        // -----------------------------------------------------READ-----------------------------------------------------
         // metodo para obtener todos los productos activos
         public async Task<IEnumerable<ProductOutputDTO>> GetAllProductsAsync()
         {
             return await _context.Products
-                .Where(p => p.active)
-                .Include(p => p.category)
-                .Select(p => new ProductOutputDTO
-                {
-                    id = p.id,
-                    name = p.name,
-                    category = p.category.category,
-                    price = p.price,
-                    FechaCreacion = p.FechaCreacion
-                })
+                .Where(p => p.Active)
+                .Select(ProductProjection)
                 .ToListAsync();
         }
 
-        // metodo para obtener un producto activos por id
+        // metodo para obtener un producto DTO activos por id
         public async Task<ProductOutputDTO?> GetProductDtoByIdAsync(int id)
         {
             var product = await _context.Products
-                .Where(p => p.id == id && p.active)
-                .Include(p => p.category)
-                .Select(p => new ProductOutputDTO
-                {
-                    id = p.id,
-                    name = p.name,
-                    category = p.category.category,
-                    price = p.price,
-                    FechaCreacion = p.FechaCreacion
-                })
+                .Where(p => p.Id == id && p.Active)
+                .Select(ProductProjection)
                 .FirstOrDefaultAsync()
-                ?? throw new ProductNotFoundException("Producto no encontrado");
+                ?? throw new NotFoundException($"Producto con id {id} no encontrado");
 
             return product;
         }
-        public async Task<Product> GetProductByIdAsyncO(int id)
+
+        // metodo para obtener un producto activo por id, se devuelve el objeto Product completo, se utiliza para actualizar y eliminar productos
+        public async Task<Product> GetProductEntityByIdAsync(int id)
         {
             var product = await _context.Products
-                .Where(p => p.id == id && p.active)
-                .Include(p => p.category)
+                .Where(p => p.Id == id && p.Active)
+                .Include(p => p.Category)
                 .FirstOrDefaultAsync()
-                ?? throw new ProductNotFoundException("Producto no encontrado");
+                ?? throw new NotFoundException($"Producto con id {id} no encontrado");
 
             return product;
         }
@@ -92,10 +97,10 @@ namespace WebApplicationPractica.Services
         // metodo para actualizar un producto, se actualizan todos los campos del producto
         public async Task UpdateAsync(int id, ProductUpdateDto productDto)
         { 
-            var product = await GetProductByIdAsyncO(id);
-            product.name = productDto.name;
-            product.categoryId = productDto.categoryId;
-            product.price = productDto.price;
+            var product = await GetProductEntityByIdAsync(id);
+            product.Name = productDto.Name;
+            product.CategoryId = productDto.CategoryId;
+            product.Price = productDto.Price;
 
             await _context.SaveChangesAsync();
         }
@@ -105,31 +110,18 @@ namespace WebApplicationPractica.Services
         {
             var product = await GetProductEntityByIdAsync(id);
 
-            product.active = false;
+            product.Active = false;
 
             await _context.SaveChangesAsync();
-        }
-        // metodo para verificar si un producto existe por id
-
-        public bool ProductExists(int id)
-        {
-            return _context.Products.Any(e => e.id == id);
         }
 
         public async Task<IEnumerable<ProductOutputDTO>> GetProductsPage(int page, int pageSize)
         {
-            return await _context.Products.Where(p => p.active)
+            ValidatePageParameters(ref page, ref pageSize);
+            return await _context.Products.Where(p => p.Active)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Include(p => p.category)
-                .Select(p => new ProductOutputDTO
-                {
-                    id = p.id,
-                    name = p.name,
-                    category = p.category.category,
-                    price = p.price,
-                    FechaCreacion = p.FechaCreacion
-                })
+                .Select(ProductProjection)
                 .ToListAsync();
                 
         }
@@ -140,18 +132,16 @@ namespace WebApplicationPractica.Services
         */
         public async Task<IEnumerable<ProductOutputDTO>> GetProductsByCategoryAsync(int categoryId, int page, int pageSize)
         {
-            return await _context.Products.Where(p => p.categoryId == categoryId && p.active)
+            ValidatePageParameters(ref page, ref pageSize);
+            if (page> 0 && pageSize > 0)
+            {
+                page = 1;
+                pageSize = 10;
+            }
+            return await _context.Products.Where(p => p.CategoryId == categoryId && p.Active)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Include(p => p.category)
-                .Select(p => new ProductOutputDTO
-                {
-                    id = p.id,
-                    name = p.name,
-                    category = p.category.category,
-                    price = p.price,
-                    FechaCreacion = p.FechaCreacion
-                })
+                .Select(ProductProjection)
                 .ToListAsync();
         }
         /*
@@ -163,18 +153,11 @@ namespace WebApplicationPractica.Services
 
         public async Task<IEnumerable<ProductOutputDTO>> GetProductsByRangePriceAsync(decimal minPrice, decimal maxPrice, int page, int pageSize)
         {
-            return await _context.Products.Where(p => p.price >= minPrice && p.price <= maxPrice && p.active)
+            ValidatePageParameters(ref page, ref pageSize);
+            return await _context.Products.Where(p => p.Price >= minPrice && p.Price <= maxPrice && p.Active)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Include(p => p.category)
-                .Select(p => new ProductOutputDTO
-                {
-                    id = p.id,
-                    name = p.name,
-                    category = p.category.category,
-                    price = p.price,
-                    FechaCreacion = p.FechaCreacion
-                })
+                .Select(ProductProjection)
                 .ToListAsync();
         }
 
@@ -186,33 +169,20 @@ namespace WebApplicationPractica.Services
 
         public async Task<IEnumerable<ProductOutputDTO>> SortProductsAsync(string sortTerm, int page, int pageSize)
         {
+            ValidatePageParameters(ref page, ref pageSize);
             return sortTerm.ToLower() switch
             {
-                "asc" => await _context.Products.Where(p => p.active).OrderBy(p => p.price)
+                "asc" => await _context.Products.Where(p => p.Active)
+                    .OrderBy(p => p.Price)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
-                    .Include(p => p.category)
-                    .Select(p => new ProductOutputDTO
-                    {
-                        id = p.id,
-                        name = p.name,
-                        category = p.category.category,
-                        price = p.price,
-                        FechaCreacion = p.FechaCreacion
-                    })
+                    .Select(ProductProjection)
                     .ToListAsync(),
-                "desc" => await _context.Products.Where(p => p.active).OrderByDescending(p => p.price)
+                "desc" => await _context.Products.Where(p => p.Active)
+                    .OrderByDescending(p => p.Price)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
-                    .Include(p => p.category)
-                    .Select(p => new ProductOutputDTO
-                    {
-                        id = p.id,
-                        name = p.name,
-                        category = p.category.category,
-                        price = p.price,
-                        FechaCreacion = p.FechaCreacion
-                    })
+                    .Select(ProductProjection)
                     .ToListAsync(),
                 _ => throw new ArgumentException("Invalid sort term")
             };
@@ -221,18 +191,10 @@ namespace WebApplicationPractica.Services
         public async Task<ProductOutputDTO?> GetProductByNameAsync(string name)
         {
             var product = await _context.Products
-                .Where(p => p.name == name && p.active)
-                .Include(p => p.category)
-                .Select(p => new ProductOutputDTO
-                {
-                    id = p.id,
-                    name = p.name,
-                    category = p.category.category,
-                    price = p.price,
-                    FechaCreacion = p.FechaCreacion
-                })
+                .Where(p => p.Name == name && p.Active)
+                .Select(ProductProjection)
                 .FirstOrDefaultAsync()
-                ?? throw new ProductNotFoundException("Producto no encontrado");
+                ?? throw new NotFoundException($"Producto con nombre {name} no encontrado");
 
             return product;
         

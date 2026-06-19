@@ -1,15 +1,41 @@
-using WebApplicationPractica.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using WebApplicationPractica.Services;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using WebApplicationPractica.Data;
 using WebApplicationPractica.Exceptions;
+using WebApplicationPractica.Models;
+using WebApplicationPractica.Models.DTO;
+using WebApplicationPractica.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // obtencion de cadena de conexion con la base de datos desde el archivo appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// registro 
+// Autenticacion por jwt
+var key = builder.Configuration["Jwt:Key"];
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(key))
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// registro 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString)
 );
@@ -17,30 +43,31 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Regstro del servicio de ProductService para inyeccion de dependencias
 
 builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<ICategoryService, CategoryService>();    
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
-// Registro del manejador de excepciones personalizado para productos
+builder.Services.AddScoped<
+    ISimpleCrudService<Role, RoleInputDTO, RoleOutputDTO>,
+    RoleService>();
 
 builder.Services.AddExceptionHandler<ProductExceptionHandler>();
-// Add services to the container.
+builder.Services.AddProblemDetails();
 
 builder.Services.AddControllers();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
-    app.MapOpenApi();
-}
+app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+
 app.UseAuthorization();
+
 
 app.MapControllers();
 

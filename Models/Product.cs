@@ -5,16 +5,16 @@ namespace WebApplicationPractica.Models
 {
     public class Product
     {
-        public int id { get; set; }
+        public int Id { get; set; }
 
-        public string  name { get; set; }
+        public string  Name { get; set; }
 
-        public decimal price { get; set; }
+        public decimal Price { get; set; }
 
-        public Category category { get; set; } = null;
-        public int categoryId { get; set; }
+        public Category Category { get; set; } = null;
+        public int CategoryId { get; set; }
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
 
-        public bool active { get; set; } = true;
+        public bool Active { get; set; } = true;
     }
 }

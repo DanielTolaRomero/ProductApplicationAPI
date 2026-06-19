@@ -14,55 +14,32 @@ namespace WebApplicationPractica.Exceptions
         {
             switch(exception)
             {
-                case ProductNotFoundException:
-                    _logger.LogWarning(exception, "Producto no encontrado: {Message}", exception.Message);
+                case NotFoundException:
+                    _logger.LogWarning(exception, "Entidad no encontrado: {Message}", exception.Message);
                     httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
                     httpContext.Response.ContentType = "application/json";
                     var response = new
                     {
-                        error = "Producto no encontrado",
+                        error = "Entidad no encontrado",
                         message = exception.Message,
                         timestamp = DateTime.UtcNow
                     };
                     await httpContext.Response.WriteAsJsonAsync(response, cancellationToken);
                     return true;
-
-                case ProductInvalidIdException:
-                    _logger.LogWarning(exception, "Producto inválido: {Message}", exception.Message);
+                case InvalidValueException:
+                    _logger.LogWarning(exception, "Valor inválida: {Message}", exception.Message);
                     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     httpContext.Response.ContentType = "application/json";
-                    var badResponse = new
-                    {
-                        error = "Producto inválido",
-                        message = exception.Message,
-                        timestamp = DateTime.UtcNow
-                    };
-                    await httpContext.Response.WriteAsJsonAsync(badResponse, cancellationToken);
-                    return true;
-                case CategoryNotFoundException:
-                    _logger.LogWarning(exception, "Categoría no encontrada: {Message}", exception.Message);
-                    httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-                    httpContext.Response.ContentType = "application/json";
-                    var categoryResponse = new
-                    {
-                        error = "Categoría no encontrada",
-                        message = exception.Message,
-                        timestamp = DateTime.UtcNow
-                    };
-                    await httpContext.Response.WriteAsJsonAsync(categoryResponse, cancellationToken);
-                    return true;
-                case CategoryInvalidValueException:
-                    _logger.LogWarning(exception, "Categoría inválida: {Message}", exception.Message);
-                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    httpContext.Response.ContentType = "application/json";
-                    var categoryBadResponse = new
+                    var responseInvalidValue = new
                     {
                         error = "Categoría inválida",
                         message = exception.Message,
                         timestamp = DateTime.UtcNow
                     };
-                    await httpContext.Response.WriteAsJsonAsync(categoryBadResponse, cancellationToken);
+                    await httpContext.Response.WriteAsJsonAsync(responseInvalidValue, cancellationToken);
                     return true;
+                
+
             }
 
             return false;

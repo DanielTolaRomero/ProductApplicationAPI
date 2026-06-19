@@ -36,7 +36,7 @@ namespace WebApplicationPractica.Controllers
 
         // api/Category/create
         [HttpPost("create")]
-        public async Task<ActionResult<CategoryOutputDTO>> createCategoryAsync(Category category)
+        public async Task<ActionResult<CategoryOutputDTO>> createCategoryAsync(CategoryInputDTO category)
         {
             var categoryDto = await _categoryService.CreateAsync(category);
             return Ok(categoryDto);
@@ -45,7 +45,7 @@ namespace WebApplicationPractica.Controllers
 
         // api/Category/update/5
         [HttpPut("update/{id}")]
-        public async Task<ActionResult> updateCategoryAsync(int id, Category category)
+        public async Task<ActionResult> updateCategoryAsync(int id, CategoryInputDTO category)
         {
             await _categoryService.UpdateAsync(id, category);
             return NoContent();

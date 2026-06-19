@@ -2,10 +2,10 @@
 {
     public class ProductOutputDTO
     {
-        public int id { get; set; }
-        public required string name { get; set; }
-        public required string category { get; set; }
-        public decimal price { get; set; }
+        public int Id { get; set; }
+        public required string Name { get; set; }
+        public required string Category { get; set; }
+        public decimal Price { get; set; }
         public DateTime FechaCreacion { get; set; }
     }
 }

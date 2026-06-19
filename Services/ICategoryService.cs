@@ -7,8 +7,8 @@ namespace WebApplicationPractica.Services
     {
          public Task<IEnumerable<CategoryOutputDTO>> GetAllCategoriesAsync();
          public Task<CategoryOutputDTO?> GetCategoryByIdAsync(int id);
-         public Task<CategoryOutputDTO> CreateAsync(Category category);
-         public Task UpdateAsync(int id, Category category);
+         public Task<CategoryOutputDTO> CreateAsync(CategoryInputDTO category);
+         public Task UpdateAsync(int id, CategoryInputDTO category);
          public Task DeleteAsync(int id);
     }
 }
